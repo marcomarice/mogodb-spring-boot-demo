@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static it.bitrock.mongodbspringbootdemo.dto.transformer.MovieTransformer.fromMoviePostDtoToMovie;
 
@@ -28,9 +29,10 @@ public class MovieService {
     private static final String FAILURE_MESSAGE = "Missing some important info about the movie";
 
     public ResponseEntity<Movie> getMovieByIdRepository(String movieId) {
-        return Option.of(movieRepository.findById(movieId))
-                .map(movie -> ResponseEntity.ok().body(movie.get()))
-                .getOrElse(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+        Optional<Movie> movieOptional = movieRepository.findById(movieId);
+        return movieOptional
+                .map(movie -> ResponseEntity.ok().body(movie))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
     public ResponseEntity<Movie> getMovieByIdMongoClient(String movieId) {

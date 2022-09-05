@@ -32,7 +32,8 @@ class MovieControllerTest {
     void getMovieByIdRepositoryPositiveTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdRepository(RIGHT_MOVIE_ID);
         Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene", Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
+        Assertions.assertEquals("Blacksmith Scene",
+                Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
         Assertions.assertNotNull(responseEntityMovie);
     }
 
@@ -40,12 +41,13 @@ class MovieControllerTest {
     void getMovieByIdMongoClientPositiveTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdMongoClient(RIGHT_MOVIE_ID);
         Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene", Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
+        Assertions.assertEquals("Blacksmith Scene",
+                Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
         Assertions.assertNotNull(responseEntityMovie);
     }
 
     @Test
-    void getMovieByIdNegativeTest() {
+    void getMovieByIdRepositoryNegativeTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdRepository(WRONG_MOVIE_ID);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntityMovie.getStatusCode());
         Assertions.assertNull(responseEntityMovie.getBody());
@@ -55,7 +57,8 @@ class MovieControllerTest {
     void getMovieByTitleRepositoryPositiveTest() {
         ResponseEntity<List<Movie>> responseEntityMovie = movieController.getMovieByTitleRepository("Blacksmith Scene");
         Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene", Objects.requireNonNull(responseEntityMovie.getBody()).get(0).getTitle());
+        Assertions.assertEquals("Blacksmith Scene",
+                Objects.requireNonNull(responseEntityMovie.getBody()).get(0).getTitle());
         Assertions.assertNotNull(responseEntityMovie);
     }
 
@@ -79,7 +82,8 @@ class MovieControllerTest {
     void getAllMovieGenresPositiveTest() {
         ResponseEntity<List<Document>> responseEntityMoviesGenres = movieController.getAllMovieGenres();
         Assertions.assertEquals(HttpStatus.OK, responseEntityMoviesGenres.getStatusCode());
-        Assertions.assertEquals(26, Objects.requireNonNull(responseEntityMoviesGenres.getBody()).size());
+        Assertions.assertEquals(26,
+                Objects.requireNonNull(responseEntityMoviesGenres.getBody()).size());
         Assertions.assertNotNull(responseEntityMoviesGenres);
     }
 
@@ -115,6 +119,7 @@ class MovieControllerTest {
         ResponseEntity<Movie> responseEntityMovie = commentController
                 .getMovieByComment("5a9427648b0beebeb69579e7");
         Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("The Land Beyond the Sunset", Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
+        Assertions.assertEquals("The Land Beyond the Sunset",
+                Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
     }
 }
