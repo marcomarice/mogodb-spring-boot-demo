@@ -1,5 +1,6 @@
 package it.bitrock.mongodbspringbootdemo.service;
 
+import io.vavr.control.Option;
 import it.bitrock.mongodbspringbootdemo.dto.MoviePostDto;
 import it.bitrock.mongodbspringbootdemo.model.Movie;
 import it.bitrock.mongodbspringbootdemo.model.utils.MovieQueryUtils;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static it.bitrock.mongodbspringbootdemo.dto.transformer.MovieTransformer.fromMoviePostDtoToMovie;
 
@@ -25,27 +25,36 @@ public class MovieService {
     @Autowired
     MovieRepository movieRepository;
 
-    public ResponseEntity<Movie> getMovieById(String movieId) {
-        Optional<Movie> movieOptional = movieRepository.findById(movieId);
-        if (movieOptional.isPresent()) {
-            return ResponseEntity.ok().body(movieOptional.get());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    private static final String FAILURE_MESSAGE = "Missing some important info about the movie";
+
+    public ResponseEntity<Movie> getMovieByIdRepository(String movieId) {
+        return Option.of(movieRepository.findById(movieId))
+                .map(movie -> ResponseEntity.ok().body(movie.get()))
+                .getOrElse(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
-    public ResponseEntity<List<Movie>> getMovieByTitle(String movieTitle) {
-        Optional<List<Movie>> movieOptional = Optional.ofNullable(
-                movieRepository.findByTitle(movieTitle));
-        if (movieOptional.isPresent()) {
-            return ResponseEntity.ok().body(movieOptional.get());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    public ResponseEntity<Movie> getMovieByIdMongoClient(String movieId) {
+        return Option.of(movieQueryUtils.getMovieByIdMongoClient(movieId))
+                .map(movie -> ResponseEntity.ok().body(movie))
+                .getOrElse(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
-    public ResponseEntity<List<Movie>> getMoviesByYear(Integer year) {
+    public ResponseEntity<List<Movie>> getMovieByTitleRepository(String movieTitle) {
+        return Option.of(movieRepository.findByTitle(movieTitle))
+                .map(movie -> ResponseEntity.ok().body(movie))
+                .getOrElse(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
+
+    public ResponseEntity<List<Movie>> getMoviesByYearRepository(Integer year) {
         if (year != null && year >= 1900) {
-//            return ResponseEntity.ok().body(movieQueryUtils.getMoviesByYear(year));
             return ResponseEntity.ok().body(movieRepository.findByYear(year));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    public ResponseEntity<List<Movie>> getMoviesByYearMongoClient(Integer year) {
+        if (year != null && year >= 1900) {
+            return ResponseEntity.ok().body(movieQueryUtils.getMoviesByYearMongoClient(year));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
@@ -64,41 +73,45 @@ public class MovieService {
                 !moviePostDto.getGenres().isEmpty()) {
             movieRepository.save(fromMoviePostDtoToMovie(moviePostDto));
             return new ResponseEntity<>("Congratulation Movie added successfully!",
-                            HttpStatus.OK);
+                    HttpStatus.OK);
         }
-        return new ResponseEntity<>("Missing some important info about the movie", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(FAILURE_MESSAGE, HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<String> updateMovie(String title) {
-        if (!title.isEmpty()) {
-            Movie movie = movieRepository.findByTitle(title).get(0);
-            movie.setYear(2020);
-            movieRepository.save(movie);
-            return new ResponseEntity<>("Congratulation Movie updated successfully!",
+        return Option.of(movieRepository.findByTitle(title).get(0))
+                .map(movie -> {
+                    movie.setYear(2020);
+                    movieRepository.save(movie);
+                    return new ResponseEntity<>(
+                            "Congratulation Movie updated successfully!",
                             HttpStatus.OK);
-        }
-        return new ResponseEntity<>("Missing some important info about the movie", HttpStatus.BAD_REQUEST);
+                }).getOrElse(() -> new ResponseEntity<>(
+                        FAILURE_MESSAGE,
+                        HttpStatus.BAD_REQUEST));
     }
 
     public ResponseEntity<String> updateMovies(Integer year) {
         if (year != null && year > 1900) {
             List<Movie> movies = movieRepository.findByYear(year);
-            movies.stream()
-                    .forEach(movie -> movie.setLastUpdate(LocalDateTime.now()));
+            movies.forEach(movie -> movie.setLastUpdate(LocalDateTime.now()));
             movieRepository.saveAll(movies);
             return new ResponseEntity<>("Congratulation Movies updated successfully!",
-                            HttpStatus.OK);
+                    HttpStatus.OK);
         }
         return new ResponseEntity<>("Missing some important info about the movies", HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<String> deleteMovie(String title) {
-        if (!title.isEmpty()) {
-            Movie movie = movieRepository.findByTitle(title).get(0);
-            movieRepository.delete(movie);
-            return new ResponseEntity<>("Congratulation Movie delete successfully!",
+        return Option.of(movieRepository.findByTitle(title).get(0))
+                .map(movie -> {
+                    movieRepository.delete(movie);
+                    return new ResponseEntity<>(
+                            "Congratulation Movie delete successfully!",
                             HttpStatus.OK);
-        }
-        return new ResponseEntity<>("Missing some important info about the movie", HttpStatus.BAD_REQUEST);
+                })
+                .getOrElse(() -> new ResponseEntity<>(
+                        FAILURE_MESSAGE,
+                        HttpStatus.BAD_REQUEST));
     }
 }

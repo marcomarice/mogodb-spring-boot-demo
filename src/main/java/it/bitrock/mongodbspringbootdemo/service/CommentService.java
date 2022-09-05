@@ -17,9 +17,8 @@ public class CommentService {
 
     public ResponseEntity<Movie> getMovieByComment(String id) {
         Optional<Movie> movieOptional = Optional.ofNullable(movieQueryUtils.getMovieByComment(id));
-        if (movieOptional.isPresent()) {
-            return ResponseEntity.ok().body(movieOptional.get());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return movieOptional
+                .map(movie -> ResponseEntity.ok().body(movie))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 }

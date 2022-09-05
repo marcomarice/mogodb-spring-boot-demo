@@ -5,6 +5,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import it.bitrock.mongodbspringbootdemo.model.Movie;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +28,8 @@ public class QueryUtils {
     @Value("${spring.data.mongodb.database}")
     private String database;
 
-    public MongoClient openConnection() {
-        return MongoClients.create(mongoClientSettings());
+    public MongoClient createWithDefaultPojoCodecRegistry() {
+        return MongoClients.create(defaultPojoCodecRegistry());
     }
 
     public void closeConnection(MongoClient mongoClient) {
@@ -40,13 +41,18 @@ public class QueryUtils {
                 .getCollection(collection);
     }
 
-    private MongoClientSettings mongoClientSettings() {
-        ConnectionString connectionString = new ConnectionString(mongodbUri);
-        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+    public MongoCollection<Movie> getMoviesCollection(MongoClient mongoClient, String collection) {
+        return mongoClient.getDatabase(database)
+                .getCollection(collection, Movie.class);
+    }
+
+    private MongoClientSettings defaultPojoCodecRegistry() {
+        CodecRegistry pojoCodecRegistry = fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
         return MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
+                .applyConnectionString(new ConnectionString(mongodbUri))
                 .codecRegistry(pojoCodecRegistry)
                 .build();
     }

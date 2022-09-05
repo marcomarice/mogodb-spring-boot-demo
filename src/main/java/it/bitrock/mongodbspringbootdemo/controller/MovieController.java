@@ -18,18 +18,28 @@ public class MovieController {
     public MovieService movieService;
 
     @GetMapping("/movie/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable String id) {
-        return movieService.getMovieById(id);
+    public ResponseEntity<Movie> getMovieByIdRepository(@PathVariable String id) {
+        return movieService.getMovieByIdRepository(id);
+    }
+
+    @GetMapping("/v2/movie/{id}")
+    public ResponseEntity<Movie> getMovieByIdMongoClient(@PathVariable String id) {
+        return movieService.getMovieByIdMongoClient(id);
     }
 
     @GetMapping("/movie-by-title/{title}")
-    public ResponseEntity<List<Movie>> getMovieByTitle(@PathVariable String title) {
-        return movieService.getMovieByTitle(title);
+    public ResponseEntity<List<Movie>> getMovieByTitleRepository(@PathVariable String title) {
+        return movieService.getMovieByTitleRepository(title);
     }
 
-    @GetMapping("/movie-by-year/{year}")
-    public ResponseEntity<List<Movie>> getMoviesByYear(@PathVariable Integer year) {
-        return movieService.getMoviesByYear(year);
+    @GetMapping("/movies-by-year/{year}")
+    public ResponseEntity<List<Movie>> getMoviesByYearRepository(@PathVariable Integer year) {
+        return movieService.getMoviesByYearRepository(year);
+    }
+
+    @GetMapping("/v2/movies-by-year/{year}")
+    public ResponseEntity<List<Movie>> getMoviesByYearMongoClient(@PathVariable Integer year) {
+        return movieService.getMoviesByYearMongoClient(year);
     }
 
     @GetMapping("/movie-genres")
