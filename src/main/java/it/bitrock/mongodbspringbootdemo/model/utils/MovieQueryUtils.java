@@ -1,6 +1,5 @@
 package it.bitrock.mongodbspringbootdemo.model.utils;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.UnwindOptions;
 import it.bitrock.mongodbspringbootdemo.model.Movie;
 import org.bson.Document;
@@ -30,19 +29,13 @@ public class MovieQueryUtils {
     private String database;
 
     public Movie getMovieByIdMongoClient(String id) {
-        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
-        Movie movie = queryUtils.getMoviesCollection(mongoClient, MOVIE_COLLECTION)
+        return queryUtils.getMoviesCollection(MOVIE_COLLECTION)
                 .find(eq("_id", new ObjectId(id))).first();
-        queryUtils.closeMongoClient(mongoClient);
-        return movie;
     }
 
     public List<Movie> getMoviesByYearMongoClient(Integer year) {
-        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
-        List<Movie> movies = queryUtils.getMoviesCollection(mongoClient, MOVIE_COLLECTION)
+        return queryUtils.getMoviesCollection(MOVIE_COLLECTION)
                 .find(eq("year", year)).into(new ArrayList<>());
-        queryUtils.closeMongoClient(mongoClient);
-        return movies;
     }
 
     public List<Document> getAllMovieGenres() {
@@ -58,7 +51,6 @@ public class MovieQueryUtils {
     }
 
     public Movie getMovieByComment(String id) {
-        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
         List<Bson> pipeline = new ArrayList<>();
         Bson matchComment = match(eq("_id", new ObjectId(id)));
         Bson lookupComment = lookup(MOVIE_COLLECTION, "movie_id", "_id", "movie");
@@ -72,9 +64,7 @@ public class MovieQueryUtils {
         pipeline.add(unwindComment);
         pipeline.add(replaceRootComment);
 
-        Movie movie = queryUtils.getMoviesCollection(mongoClient, COMMENT_COLLECTION)
+        return queryUtils.getMoviesCollection(COMMENT_COLLECTION)
                 .aggregate(pipeline).first();
-        queryUtils.closeMongoClient(mongoClient);
-        return movie;
     }
 }

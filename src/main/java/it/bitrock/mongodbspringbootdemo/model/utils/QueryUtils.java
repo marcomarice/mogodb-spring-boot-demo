@@ -30,10 +30,6 @@ public class QueryUtils {
     @Value("${spring.data.mongodb.database}")
     private String database;
 
-    public MongoClient createMongoClientWithDefaultCodec() {
-        return MongoClients.create(defaultCodecRegistry());
-    }
-
     public void closeMongoClient(MongoClient mongoClient) {
         mongoClient.close();
     }
@@ -42,11 +38,10 @@ public class QueryUtils {
         return Try.of(() -> mongoDBConfiguration.mongoClient())
                 .map(mc -> mc.getDatabase(database).getCollection(collection))
                 .getOrElse(() -> null);
-
     }
 
-    public MongoCollection<Movie> getMoviesCollection(MongoClient mongoClient, String collection) {
-        return Try.of(() -> mongoClient)
+    public MongoCollection<Movie> getMoviesCollection(String collection) {
+        return Try.of(this::createMongoClientWithDefaultCodec)
                 .map(mc -> mc.getDatabase(database).getCollection(collection, Movie.class))
                 .getOrElse(() -> null);
     }
@@ -59,5 +54,9 @@ public class QueryUtils {
                 .applyConnectionString(new ConnectionString(mongodbUri))
                 .codecRegistry(pojoCodecRegistry)
                 .build();
+    }
+
+    private MongoClient createMongoClientWithDefaultCodec() {
+        return MongoClients.create(defaultCodecRegistry());
     }
 }
