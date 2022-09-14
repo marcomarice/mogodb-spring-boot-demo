@@ -30,18 +30,18 @@ public class MovieQueryUtils {
     private String database;
 
     public Movie getMovieByIdMongoClient(String id) {
-        MongoClient openConnection = queryUtils.createWithDefaultPojoCodecRegistry();
-        Movie movie = queryUtils.getMoviesCollection(openConnection, MOVIE_COLLECTION)
+        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
+        Movie movie = queryUtils.getMoviesCollection(mongoClient, MOVIE_COLLECTION)
                 .find(eq("_id", new ObjectId(id))).first();
-        queryUtils.closeConnection(openConnection);
+        queryUtils.closeMongoClient(mongoClient);
         return movie;
     }
 
     public List<Movie> getMoviesByYearMongoClient(Integer year) {
-        MongoClient openConnection = queryUtils.createWithDefaultPojoCodecRegistry();
-        List<Movie> movies = queryUtils.getMoviesCollection(openConnection, MOVIE_COLLECTION)
+        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
+        List<Movie> movies = queryUtils.getMoviesCollection(mongoClient, MOVIE_COLLECTION)
                 .find(eq("year", year)).into(new ArrayList<>());
-        queryUtils.closeConnection(openConnection);
+        queryUtils.closeMongoClient(mongoClient);
         return movies;
     }
 
@@ -52,13 +52,13 @@ public class MovieQueryUtils {
         Bson groupGenres = group("$genres");
         pipeline.add(unwindGenres);
         pipeline.add(groupGenres);
-        return queryUtils.getDocumentsCollection(queryUtils.mongoClient, MOVIE_COLLECTION)
+        return queryUtils.getDocumentsCollection(MOVIE_COLLECTION)
                 .aggregate(pipeline)
                 .into(new ArrayList<>());
     }
 
     public Movie getMovieByComment(String id) {
-        MongoClient openConnection = queryUtils.createWithDefaultPojoCodecRegistry();
+        MongoClient mongoClient = queryUtils.createMongoClientWithDefaultCodec();
         List<Bson> pipeline = new ArrayList<>();
         Bson matchComment = match(eq("_id", new ObjectId(id)));
         Bson lookupComment = lookup(MOVIE_COLLECTION, "movie_id", "_id", "movie");
@@ -72,9 +72,9 @@ public class MovieQueryUtils {
         pipeline.add(unwindComment);
         pipeline.add(replaceRootComment);
 
-        Movie movie = queryUtils.getMoviesCollection(openConnection, COMMENT_COLLECTION)
+        Movie movie = queryUtils.getMoviesCollection(mongoClient, COMMENT_COLLECTION)
                 .aggregate(pipeline).first();
-        queryUtils.closeConnection(openConnection);
+        queryUtils.closeMongoClient(mongoClient);
         return movie;
     }
 }

@@ -5,6 +5,8 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import io.vavr.control.Try;
+import it.bitrock.mongodbspringbootdemo.config.MongoDBConfiguration;
 import it.bitrock.mongodbspringbootdemo.model.Movie;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public class QueryUtils {
 
     @Autowired
-    MongoClient mongoClient;
+    MongoDBConfiguration mongoDBConfiguration;
 
     @Value("${spring.data.mongodb.uri}")
     private String mongodbUri;
@@ -28,27 +30,29 @@ public class QueryUtils {
     @Value("${spring.data.mongodb.database}")
     private String database;
 
-    public MongoClient createWithDefaultPojoCodecRegistry() {
-        return MongoClients.create(defaultPojoCodecRegistry());
+    public MongoClient createMongoClientWithDefaultCodec() {
+        return MongoClients.create(defaultCodecRegistry());
     }
 
-    public void closeConnection(MongoClient mongoClient) {
+    public void closeMongoClient(MongoClient mongoClient) {
         mongoClient.close();
     }
 
-    public MongoCollection<Document> getDocumentsCollection(MongoClient mongoClient, String collection) {
-        return mongoClient.getDatabase(database)
-                .getCollection(collection);
+    public MongoCollection<Document> getDocumentsCollection(String collection) {
+        return Try.of(() -> mongoDBConfiguration.mongoClient())
+                .map(mc -> mc.getDatabase(database).getCollection(collection))
+                .getOrElse(() -> null);
+
     }
 
     public MongoCollection<Movie> getMoviesCollection(MongoClient mongoClient, String collection) {
-        return mongoClient.getDatabase(database)
-                .getCollection(collection, Movie.class);
+        return Try.of(() -> mongoClient)
+                .map(mc -> mc.getDatabase(database).getCollection(collection, Movie.class))
+                .getOrElse(() -> null);
     }
 
-    private MongoClientSettings defaultPojoCodecRegistry() {
-        CodecRegistry pojoCodecRegistry = fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
+    private MongoClientSettings defaultCodecRegistry() {
+        CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
         return MongoClientSettings.builder()
