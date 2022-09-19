@@ -2,9 +2,6 @@ package it.bitrock.mongodbspringbootdemo.controller;
 
 import it.bitrock.mongodbspringbootdemo.dto.MoviePostDto;
 import it.bitrock.mongodbspringbootdemo.model.Movie;
-import lombok.extern.slf4j.Slf4j;
-import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,12 +12,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@SpringBootTest
-@Slf4j
-class MovieControllerTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private static final String RIGHT_MOVIE_ID = "573a1390f29313caabcd4135";
-    private static final String WRONG_MOVIE_ID = "xxx";
+@SpringBootTest
+class MovieControllerTest {
 
     @Autowired
     MovieController movieController;
@@ -28,98 +23,130 @@ class MovieControllerTest {
     @Autowired
     CommentController commentController;
 
+    private static final String RIGHT_MOVIE_ID = "573a1390f29313caabcd4135";
+    private static final String WRONG_MOVIE_ID = "xxx";
+
     @Test
     void getMovieByIdRepositoryPositiveTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdRepository(RIGHT_MOVIE_ID);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene",
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
+        assertEquals("Blacksmith Scene",
                 Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
-        Assertions.assertNotNull(responseEntityMovie);
+        assertNotNull(responseEntityMovie);
     }
 
     @Test
     void getMovieByIdMongoClientPositiveTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdMongoClient(RIGHT_MOVIE_ID);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene",
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
+        assertEquals("Blacksmith Scene",
                 Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
-        Assertions.assertNotNull(responseEntityMovie);
+        assertNotNull(responseEntityMovie);
     }
 
     @Test
     void getMovieByIdRepositoryNegativeTest() {
         ResponseEntity<Movie> responseEntityMovie = movieController.getMovieByIdRepository(WRONG_MOVIE_ID);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntityMovie.getStatusCode());
-        Assertions.assertNull(responseEntityMovie.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntityMovie.getStatusCode());
+        assertNull(responseEntityMovie.getBody());
     }
 
     @Test
     void getMovieByTitleRepositoryPositiveTest() {
         ResponseEntity<List<Movie>> responseEntityMovie = movieController.getMovieByTitleRepository("Blacksmith Scene");
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("Blacksmith Scene",
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
+        assertEquals("Blacksmith Scene",
                 Objects.requireNonNull(responseEntityMovie.getBody()).get(0).getTitle());
-        Assertions.assertNotNull(responseEntityMovie);
+        assertNotNull(responseEntityMovie);
     }
 
     @Test
     void getMoviesByYearRepositoryPositiveTest() {
         ResponseEntity<List<Movie>> responseEntityMovies = movieController.getMoviesByYearRepository(2000);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
-        Assertions.assertEquals(618, Objects.requireNonNull(responseEntityMovies.getBody()).size());
-        Assertions.assertNotNull(responseEntityMovies);
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+        assertEquals(618, Objects.requireNonNull(responseEntityMovies.getBody()).size());
+        assertNotNull(responseEntityMovies);
     }
 
     @Test
     void getMoviesByYearMongoClientPositiveTest() {
         ResponseEntity<List<Movie>> responseEntityMovies = movieController.getMoviesByYearMongoClient(2000);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
-        Assertions.assertEquals(618, Objects.requireNonNull(responseEntityMovies.getBody()).size());
-        Assertions.assertNotNull(responseEntityMovies);
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+        assertEquals(618, Objects.requireNonNull(responseEntityMovies.getBody()).size());
+        assertNotNull(responseEntityMovies);
     }
 
     @Test
-    void getAllMovieGenresPositiveTest() {
-        ResponseEntity<List<Document>> responseEntityMoviesGenres = movieController.getAllMovieGenres();
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMoviesGenres.getStatusCode());
-        Assertions.assertEquals(26,
-                Objects.requireNonNull(responseEntityMoviesGenres.getBody()).size());
-        Assertions.assertNotNull(responseEntityMoviesGenres);
-    }
-
-    @Test
-    void addMoviePositiveTest() {
+    void addMovieRepositoryPositiveTest() {
         MoviePostDto moviePostDto = new MoviePostDto(
-                "Title 1", 1988, Arrays.asList("Director 1", "Director 2"),
+                "Title 1 - addMovie Repository", 1988, Arrays.asList("Director 1", "Director 2"),
                 Arrays.asList("Actor 1", "Actor 2"), Arrays.asList("Drama", "Horror"));
-        ResponseEntity<String> responseEntityMovie = movieController.addMovie(moviePostDto);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
+        ResponseEntity<String> responseEntityMovie = movieController.addMovieRepository(moviePostDto);
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
     }
 
     @Test
-    void updateMoviePositiveTest() {
-        ResponseEntity<String> responseEntityMovies = movieController.updateMovie("Title 1");
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    void insertMovieMongoTemplatePositiveTest() {
+        MoviePostDto moviePostDto = new MoviePostDto(
+                "Title 1 - insertMovie MongoTemplate", 1988, Arrays.asList("Director 1", "Director 2"),
+                Arrays.asList("Actor 1", "Actor 2"), Arrays.asList("Drama", "Horror"));
+        ResponseEntity<String> responseEntityMovie = movieController.insertMovieMongoTemplate(moviePostDto);
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
     }
 
     @Test
-    void updateMoviesPositiveTest() {
-        ResponseEntity<String> responseEntityMovies = movieController.updateMovies(1990);
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    void saveMovieMongoTemplatePositiveTest() {
+        MoviePostDto moviePostDto = new MoviePostDto(
+                "Title 1 - saveMovie MongoTemplate", 1988, Arrays.asList("Director 1", "Director 2"),
+                Arrays.asList("Actor 1", "Actor 2"), Arrays.asList("Drama", "Horror"));
+        ResponseEntity<String> responseEntityMovie = movieController.saveMovieMongoTemplate(moviePostDto);
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
     }
 
     @Test
-    void deleteMoviePositiveTest() {
-        ResponseEntity<String> responseEntityMovies = movieController.deleteMovie("Title 1");
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    void updateMovieTitleRepositoryPositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController.updateMovieTitleRepository("Title 1");
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    }
+
+    @Test
+    void updateMovieTitleMongoTemplatePositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController.updateMovieTitleMongoTemplate("Title 1");
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    }
+
+    @Test
+    void updateMoviesByYearRepositoryPositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController.updateMoviesByYearRepository(1990);
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    }
+
+    @Test
+    void updateMoviesByYearMongoTemplatePositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController.updateMoviesByYearMongoTemplate(1990);
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    }
+
+    @Test
+    void deleteMovieByTitleRepositoryPositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController
+                .deleteMovieByTitleRepository("Title 1 - addMovie Repository");
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
+    }
+
+    @Test
+    void deleteMovieByTitleMongoTemplatePositiveTest() {
+        ResponseEntity<String> responseEntityMovies = movieController
+                .deleteMovieByTitleMongoTemplate("Title 1 - insertMovie MongoTemplate");
+        assertEquals(HttpStatus.OK, responseEntityMovies.getStatusCode());
     }
 
     @Test
     void getMovieByCommentPositiveTest() {
         ResponseEntity<Movie> responseEntityMovie = commentController
                 .getMovieByComment("5a9427648b0beebeb69579e7");
-        Assertions.assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
-        Assertions.assertEquals("The Land Beyond the Sunset",
+        assertEquals(HttpStatus.OK, responseEntityMovie.getStatusCode());
+        assertEquals("The Land Beyond the Sunset",
                 Objects.requireNonNull(responseEntityMovie.getBody()).getTitle());
     }
 }

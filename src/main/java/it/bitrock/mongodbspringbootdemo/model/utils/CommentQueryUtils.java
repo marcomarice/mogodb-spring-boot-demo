@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 public class CommentQueryUtils {
 
     @Autowired
-    QueryUtils queryUtils;
-
-    @Autowired
     MovieQueryUtils movieQueryUtils;
 
     @Value("${spring.data.mongodb.database}")

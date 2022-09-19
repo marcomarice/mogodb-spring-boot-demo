@@ -1,8 +1,10 @@
 package it.bitrock.mongodbspringbootdemo.model.utils;
 
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UnwindOptions;
+import io.vavr.control.Try;
+import it.bitrock.mongodbspringbootdemo.config.MongoDBConfiguration;
 import it.bitrock.mongodbspringbootdemo.model.Movie;
-import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import static com.mongodb.client.model.Projections.*;
 public class MovieQueryUtils {
 
     @Autowired
-    QueryUtils queryUtils;
+    MongoDBConfiguration mongoDBConfiguration;
 
     private static final String MOVIE_COLLECTION = "movies";
     private static final String COMMENT_COLLECTION = "comments";
@@ -29,25 +31,13 @@ public class MovieQueryUtils {
     private String database;
 
     public Movie getMovieByIdMongoClient(String id) {
-        return queryUtils.getMoviesCollection(MOVIE_COLLECTION)
+        return getMoviesCollection(MOVIE_COLLECTION)
                 .find(eq("_id", new ObjectId(id))).first();
     }
 
     public List<Movie> getMoviesByYearMongoClient(Integer year) {
-        return queryUtils.getMoviesCollection(MOVIE_COLLECTION)
+        return getMoviesCollection(MOVIE_COLLECTION)
                 .find(eq("year", year)).into(new ArrayList<>());
-    }
-
-    public List<Document> getAllMovieGenres() {
-        List<Bson> pipeline = new ArrayList<>();
-        Bson unwindGenres = unwind("$genres",
-                new UnwindOptions().preserveNullAndEmptyArrays(true));
-        Bson groupGenres = group("$genres");
-        pipeline.add(unwindGenres);
-        pipeline.add(groupGenres);
-        return queryUtils.getDocumentsCollection(MOVIE_COLLECTION)
-                .aggregate(pipeline)
-                .into(new ArrayList<>());
     }
 
     public Movie getMovieByComment(String id) {
@@ -64,7 +54,13 @@ public class MovieQueryUtils {
         pipeline.add(unwindComment);
         pipeline.add(replaceRootComment);
 
-        return queryUtils.getMoviesCollection(COMMENT_COLLECTION)
+        return getMoviesCollection(COMMENT_COLLECTION)
                 .aggregate(pipeline).first();
+    }
+
+    private MongoCollection<Movie> getMoviesCollection(String collection) {
+        return Try.of(() -> mongoDBConfiguration.createMongoClientWithDefaultCodec())
+                .map(mc -> mc.getDatabase(database).getCollection(collection, Movie.class))
+                .getOrElse(() -> null);
     }
 }

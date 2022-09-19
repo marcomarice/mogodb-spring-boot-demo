@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.bson.Document;
-
 import java.util.List;
 
 @RestController
@@ -17,53 +15,73 @@ public class MovieController {
     @Autowired
     public MovieService movieService;
 
-    @GetMapping("/movie/{id}")
+    @GetMapping("/by-repository/movie/{id}")
     public ResponseEntity<Movie> getMovieByIdRepository(@PathVariable String id) {
         return movieService.getMovieByIdRepository(id);
     }
 
-    @GetMapping("/v2/movie/{id}")
+    @GetMapping("/by-mongo-client/movie/{id}")
     public ResponseEntity<Movie> getMovieByIdMongoClient(@PathVariable String id) {
         return movieService.getMovieByIdMongoClient(id);
     }
 
-    @GetMapping("/movie-by-title/{title}")
+    @GetMapping("/by-repository/movie-by-title/{title}")
     public ResponseEntity<List<Movie>> getMovieByTitleRepository(@PathVariable String title) {
         return movieService.getMovieByTitleRepository(title);
     }
 
-    @GetMapping("/movies-by-year/{year}")
+    @GetMapping("/by-repository/movies-by-year/{year}")
     public ResponseEntity<List<Movie>> getMoviesByYearRepository(@PathVariable Integer year) {
         return movieService.getMoviesByYearRepository(year);
     }
 
-    @GetMapping("/v2/movies-by-year/{year}")
+    @GetMapping("/by-mongo-client/movies-by-year/{year}")
     public ResponseEntity<List<Movie>> getMoviesByYearMongoClient(@PathVariable Integer year) {
         return movieService.getMoviesByYearMongoClient(year);
     }
 
-    @GetMapping("/movie-genres")
-    public ResponseEntity<List<Document>> getAllMovieGenres() {
-        return movieService.getAllMovieGenres();
+    @PostMapping("/by-repository/movie-add")
+    public ResponseEntity<String> addMovieRepository(@RequestBody MoviePostDto moviePostDto) {
+        return movieService.addMovieRepository(moviePostDto);
     }
 
-    @PostMapping("/movie-add")
-    public ResponseEntity<String> addMovie(@RequestBody MoviePostDto moviePostDto) {
-        return movieService.addMovie(moviePostDto);
+    @PostMapping("/by-mongo-template/movie-insert")
+    public ResponseEntity<String> insertMovieMongoTemplate(@RequestBody MoviePostDto moviePostDto) {
+        return movieService.insertMovieMongoTemplate(moviePostDto);
     }
 
-    @PutMapping("/movie-update/{title}")
-    public ResponseEntity<String> updateMovie(@PathVariable String title) {
-        return movieService.updateMovie(title);
+    @PostMapping("/by-mongo-template/movie-save")
+    public ResponseEntity<String> saveMovieMongoTemplate(@RequestBody MoviePostDto moviePostDto) {
+        return movieService.saveMovieMongoTemplate(moviePostDto);
     }
 
-    @PutMapping("/movies-update/{year}")
-    public ResponseEntity<String> updateMovies(@PathVariable Integer year) {
-        return movieService.updateMovies(year);
+    @PutMapping("/by-repository/movie-update/{title}")
+    public ResponseEntity<String> updateMovieTitleRepository(@PathVariable String title) {
+        return movieService.updateMovieTitleRepository(title);
     }
 
-    @DeleteMapping("/movie-delete/{title}")
-    public ResponseEntity<String> deleteMovie(@PathVariable String title) {
-        return movieService.deleteMovie(title);
+    @PutMapping("/by-mongo-template/movie-update/{title}")
+    public ResponseEntity<String> updateMovieTitleMongoTemplate(@PathVariable String title) {
+        return movieService.updateMovieTitleMongoTemplate(title);
+    }
+
+    @PutMapping("/by-repository/movies-update/{year}")
+    public ResponseEntity<String> updateMoviesByYearRepository(@PathVariable Integer year) {
+        return movieService.updateMoviesByYearRepository(year);
+    }
+
+    @PutMapping("/by-mongo-template/movies-update/{year}")
+    public ResponseEntity<String> updateMoviesByYearMongoTemplate(@PathVariable Integer year) {
+        return movieService.updateMoviesByYearMongoTemplate(year);
+    }
+
+    @DeleteMapping("/by-repository/movie-delete/{title}")
+    public ResponseEntity<String> deleteMovieByTitleRepository(@PathVariable String title) {
+        return movieService.deleteMovieByTitleRepository(title);
+    }
+
+    @DeleteMapping("/by-mongo-template/movie-delete/{title}")
+    public ResponseEntity<String> deleteMovieByTitleMongoTemplate(@PathVariable String title) {
+        return movieService.deleteMovieByTitleMongoTemplate(title);
     }
 }
